@@ -183,7 +183,6 @@ async function getTestResults(searchQuery, searchResults, totalScore) {
         const pagesWithFirstResultMatch = [];
 
         let resultPosition = -1;
-        let iterations = 0;
         
         while (resultPosition < 0 && candidatePages.length > 0) {
             const nextPage = await getAdditionalSearchResults(searchQuery, searchPage);
@@ -203,8 +202,9 @@ async function getTestResults(searchQuery, searchResults, totalScore) {
                 candidatePages = candidatePages.slice(currentPageIndex + 1);
                 searchPage = candidatePages[Math.floor(candidatePages.length / 2)];
             }
-            iterations++;
 
+            // Since a call is made into FA on each loop, add a 1 second delay between each
+            // iteration to respect FA's third party activity rate limit of 1/second
             await new Promise(r => setTimeout(r, 1000));
         }
     }
