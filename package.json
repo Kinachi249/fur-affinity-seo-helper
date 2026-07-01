@@ -1,0 +1,27 @@
+{
+  "name": "fur-affinity-seo-helper",
+  "version": "0.1.0",
+  "description": "Extension to help with better search ranking on FA",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:firefox": "web-ext run --start-url www.furaffinity.net --source-dir ./dist/",
+    "start:chrome": "web-ext run -t chromium --start-url www.furaffinity.net --source-dir ./dist/",
+    "build": "npx webpack"
+  },
+  "keywords": [
+    "fur",
+    "affinity",
+    "tools",
+    "extension",
+    "client"
+  ],
+  "author": "Kinachi249",
+  "license": "MIT",
+  "devDependencies": {
+    "web-ext": "^10.1.0",
+    "webpack": "^5.106.2",
+    "webpack-cli": "^7.0.2"
+  }
+}

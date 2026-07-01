@@ -1,0 +1,29 @@
+{
+  "name": "Fur Affinity SEO Helper",
+  "description": "Extension to help with better search ranking on FA",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "content_scripts": [
+    {
+        "js": [
+            "browser-polyfill.min.js",
+            "main.js"
+        ],
+        "matches": [
+            "https://www.furaffinity.net/submit/finalize/",
+            "https://www.furaffinity.net/controls/submissions/changeinfo/*"
+        ]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fa_seo_helper@lugiaberry.art",
+      "data_collection_permissions": {
+        "required": [
+          "websiteActivity",
+          "websiteContent"
+        ]
+      }
+    }
+  }
+}
