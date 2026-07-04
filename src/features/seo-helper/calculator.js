@@ -1,15 +1,18 @@
 const INDEXED_SUBMISSION_COUNT_ESTIMATE = 37000000;
-// FA+ users can go higher, but this applies for all users.
+// FA+ users can go higher, but this is the max that applies for all users.
 const PAGE_SIZE = 72;
 
+/**
+ * Main entry point into the search rank calculation
+ */
 export async function calculateRankingValue(searchQuery) {
     const submissionTitle = document.querySelector("input#title").value
-    const submissionDescription = document.querySelector("textarea#message").value
-    const submissionKeywords = document.querySelector("textarea#keywords").value
-    const submissionFilename =
-        document.querySelector("div.c-uploadDetails__previewBody img")
-            .getAttribute("src")
-            .replaceAll(/[_\.]+/g, " ")
+
+    const submissionDescriptionElement = document.querySelector("textarea#message") === null ? document.querySelector("textarea#JSMessage") : submissionDescriptionElement = document.querySelector("textarea#message")
+    const submissionDescription = submissionDescriptionElement.value
+
+    const submissionKeywords = document.querySelector("textarea#keywords").value;
+    const submissionFilename = await getUploadFilename();
 
     const cleanQuery = searchQuery.replaceAll(".", "\\.")
 
@@ -26,6 +29,28 @@ export async function calculateRankingValue(searchQuery) {
     const totalScore = baseScore + bm15Score;
 
     return await getTestResults(searchQuery, searchResults, totalScore)
+}
+
+async function getUploadFilename() {
+    let rawFilename;
+
+    if (window.location.href.startsWith('https://www.furaffinity.net/controls/submissions/changeinfo')) {
+        const currentEditUrl = window.location.href;
+        const submissionId = currentEditUrl.match(/[0-9]+/)[0];
+
+        const submissionUrl = `https://www.furaffinity.net/view/${submissionId}/`;
+
+        const submissionHtml = await fetch(submissionUrl);
+        const parseableElement = document.createElement('html');
+        parseableElement.innerHTML = await submissionHtml.text();
+
+        rawFilename = parseableElement.querySelector("div#submission-options a[href^='//d.furaffinity.net/']").href
+    } else {
+        rawFilename = document.querySelector("div.c-uploadDetails__previewBody img")
+            .getAttribute("src")
+    }
+    
+    return rawFilename.replaceAll(/[_\.]+/g, " ")
 }
 
 /**
@@ -58,7 +83,7 @@ function lcsCalculation(queryWords, fieldWords) {
     while (currentIndex < words.length) {
       let currentLcs = 0;
       for (let i = 0; i < windowSize; i++) {
-        if (currentIndex + i >= 0 && window[i] === words[currentIndex + i]) {
+        if (currentIndex + i >= 0 && !!window[i] && !!words[currentIndex + i] && window[i].toLowerCase() === words[currentIndex + i].toLowerCase()) {
           currentLcs++;
         }
       }
@@ -171,6 +196,7 @@ async function getAdditionalSearchResults(searchQuery, page) {
 async function getTestResults(searchQuery, searchResults, totalScore) {
     // If score is 500, no terms were matched and we already know this submission won't appear in a search.
     // So, skip searching if this is the case.
+    let resultPosition = -1;
     if (totalScore > 500) {
         // Use a binary search to try and reduce required number of search page lookups.
 
@@ -182,8 +208,6 @@ async function getTestResults(searchQuery, searchResults, totalScore) {
         let searchPage = Math.floor(totalPages / 2);
         const pagesWithFirstResultMatch = [];
 
-        let resultPosition = -1;
-        
         while (resultPosition < 0 && candidatePages.length > 0) {
             const nextPage = await getAdditionalSearchResults(searchQuery, searchPage);
             resultPosition = nextPage.findIndex(score => totalScore > score);
@@ -207,9 +231,9 @@ async function getTestResults(searchQuery, searchResults, totalScore) {
             // iteration to respect FA's third party activity rate limit of 1/second
             await new Promise(r => setTimeout(r, 1000));
         }
+
+        resultPosition = resultPosition === -1 ? -1 : (searchPage - 1) * PAGE_SIZE + resultPosition;
     }
-    
-    resultPosition = resultPosition === -1 ? -1 : (searchPage - 1) * PAGE_SIZE + resultPosition;
 
     return {
         totalScore: totalScore,
