@@ -205,17 +205,16 @@ async function getTestResults(searchQuery, searchResults, totalScore) {
         const totalPages = Math.min(maxPages, Math.ceil(searchResults['totalResults'] / PAGE_SIZE));
         let candidatePages = Array.from({length: totalPages}, (_, i) => i + 1);
 
-        let searchPage = Math.floor(totalPages / 2);
+        let searchPage = Math.ceil(totalPages / 2);
         const pagesWithFirstResultMatch = [];
 
         while (resultPosition < 0 && candidatePages.length > 0) {
             const nextPage = await getAdditionalSearchResults(searchQuery, searchPage);
             resultPosition = nextPage.findIndex(score => totalScore > score);
 
-            if (resultPosition < 0 && pagesWithFirstResultMatch.indexOf(searchPage + 1) !== -1) {
-                resultPosition = 0;
-                searchPage++;
-            } else if (resultPosition === 0) {
+            if (resultPosition < 0 && (pagesWithFirstResultMatch.indexOf(searchPage + 1) !== -1 || searchPage === 1)) {
+                resultPosition = nextPage.length;
+            } else if (resultPosition === 0 && searchPage !== 1) {
                 pagesWithFirstResultMatch.push(searchPage);
                 resultPosition = -1;
                 const currentPageIndex = candidatePages.indexOf(searchPage);

@@ -65,13 +65,19 @@ async function createSeoHelperForm() {
 }
 
 async function performQueryTest(testQuery) {
-    const results = await calculateRankingValue(testQuery);
-    const resultElement = await createResultsSection(results);
-    resultElement.style.paddingTop = '8px';
-
+    const loadingAnim = document.createElement("img");
+    loadingAnim.src = "https://www.furaffinity.net/themes/beta/img/loading.gif";
+    loadingAnim.style.marginLeft = "10px";
     const seoBody = document.querySelector("div#seo-body > div");
     if (seoBody.childElementCount === 3) {
         seoBody.removeChild(seoBody.lastChild);
     }
+    seoBody.appendChild(loadingAnim);
+
+    const results = await calculateRankingValue(testQuery);
+    const resultElement = await createResultsSection(results);
+    resultElement.style.paddingTop = '8px';
+
+    seoBody.removeChild(seoBody.lastChild);
     seoBody.appendChild(resultElement);
 }

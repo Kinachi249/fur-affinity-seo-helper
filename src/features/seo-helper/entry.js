@@ -1,5 +1,13 @@
 import { createResultsSection, createSeoHelperSection } from './element-creator.js'
 
+export async function initializeSeoHelper() {
+    if (window.location.href.startsWith('https://www.furaffinity.net/controls/submissions/changeinfo')) {
+        addSeoHelperToEditPage(document.querySelector("body"));
+    } else {
+        addSeoHelperToUploadPage(document.querySelector("body"));
+    }
+}
+
 async function addSeoHelperToUploadPage(body) {
   if (!body) {
     return;
@@ -22,12 +30,4 @@ async function addSeoHelperToEditPage(body) {
   const finalizeSubmissionSection = body.querySelector("#site-content section.c-submissionDetails");
 
   finalizeSubmissionSection.insertAdjacentElement("afterend", seoHelperSection);
-}
-
-export async function initializeSeoHelper() {
-    if (window.location.href.startsWith('https://www.furaffinity.net/controls/submissions/changeinfo')) {
-        addSeoHelperToEditPage(document.querySelector("body"));
-    } else {
-        addSeoHelperToUploadPage(document.querySelector("body"));
-    }
 }
